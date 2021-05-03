@@ -32,6 +32,13 @@ def fetch_play_lists(path, i, fetch_segments):
             play_list.write(datatowrite)
         return play_list_file_name
 
+def fetch_and_save_subtitles(url, path, index):
+    subtitles_file_name = path + '/subtitles{}.xml'.format(index)
+    if os.path.isfile(subtitles_file_name):
+        return
+    data = download(url)
+    with open(subtitles_file_name, 'wb') as subtitles:
+        subtitles.write(data)
 
 
 def find_play_list(text):
@@ -145,6 +152,12 @@ if len(sys.argv) < 3:
 url = sys.argv[1]
 id = sys.argv[1]
 output_path = sys.argv[2]  #'/Users/jfa/dr/PawPatrol/SE04/12/'
+index = 0
+if len(sys.argv) > 3:
+    index = int(sys.argv[3])
+
+
+os.makedirs(output_path, exist_ok=True)
 
 #response = urllib.request.urlopen(url, timeout=500)
 #data = response.read()      # a `bytes` object
@@ -176,10 +189,16 @@ for item in media_json['media']:
                 continue
             subtitle_urls.append(connection['href'])
          
-print(media_urls)
 print(subtitle_urls)
 
+subtitles_index = 0
+for subtitle_url in subtitle_urls:
+    fetch_and_save_subtitles(subtitle_url, output_path, subtitles_index)
+    subtitles_index += 1
+
 exit()
+
+url = media_urls[index]
 
 relative_play_list_url = find_play_list(fetch_play_list_from_url(url))
 

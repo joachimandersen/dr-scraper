@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-from urllib import URLopener
-from urllib2 import urlopen
+from urllib.request import urlopen
 import requests
-from urlparse import urlparse
+from urllib.parse import urlparse
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from time import sleep
@@ -39,7 +38,7 @@ def fetch_play_lists(path, i, fetch_segments):
             for part in parts:
                 if 'BANDWIDTH' in part:
                     bandwidth = part.split('=')[-1]
-                    if int(bandwidth) > 1500000:
+                    if int(bandwidth) > 1173000:
                         grab_next_path = True
             continue
         if grab_next_path == False:
@@ -48,7 +47,7 @@ def fetch_play_lists(path, i, fetch_segments):
         filedata = urlopen(line)
         datatowrite = filedata.read()
         play_list_file_name = os.path.dirname(path) + '/play-list.m3u8'
-        with open(play_list_file_name, 'w') as play_list:
+        with open(play_list_file_name, 'wb') as play_list:
             play_list.write(datatowrite)
         return play_list_file_name
 
@@ -60,7 +59,7 @@ def fetch_play_list(url):
 
 def save_master_play_list(data, path):
     file_name = path + '/master.m3u8'
-    file = open(file_name, 'wt')
+    file = open(file_name, 'wb')
     file.write(data)
     file.close()
     return file_name
@@ -74,13 +73,13 @@ def fetch_master_play_list(url, path):
 
     html = browser.execute_script("return document.body.innerHTML")
     rendered_file_name = path + '/rendered-webpage.html'
-    file = open(rendered_file_name, 'wt')
+    file = open(rendered_file_name, 'wb')
     file.write(html.encode('utf8'))
     file.close()
 
     soup = BeautifulSoup(html, 'lxml')
 
-    video = soup.find('video')
+    video = soup.find('ShortVideoUrl')
 
     print(video)
 
@@ -119,8 +118,11 @@ if len(sys.argv) == 4 and sys.argv[3] == 'ffmpeg':
     convert(output_path)
     sys.exit()
 
-master_play_list_url = fetch_master_play_list(url, output_path)#'https://www.dr.dk/tv/se/boern/ramasjang/paw-patrol/paw-patrol-iv/paw-patrol-iv-12', output_path) 
-data = fetch_play_list(master_play_list_url)
+#master_play_list_url = fetch_master_play_list(url, output_path)#'https://www.dr.dk/tv/se/boern/ramasjang/paw-patrol/paw-patrol-iv/paw-patrol-iv-12', output_path) 
+#master_play_list_url = 'https://drod07m-vh.akamaihd.net/i/all/clear/streaming/45/5fdb223f539f02076c640445/VS-Ternet-Ninja-2018-009617000_58ce16a3e2454958bfc952eab5f40468_,983,3517,2485,321,1877,499,.mp4.csmil/master.m3u8' # fetch_master_play_list(url, output_path)#'https://www.dr.dk/tv/se/boern/ramasjang/paw-patrol/paw-patrol-iv/paw-patrol-iv-12', output_path) 
+#master_play_list_url = 'https://drod02g-vh.akamaihd.net/i/dk/clear/streaming/0f/5fdd8132aa5a612714959b0f/Ternet-Ninja_c8983a9436714fc2b3731072c55dd2e9_,300,512,1000,2200,3000,4300,.mp4.csmil/master.m3u8'
+#master_play_list_url = 'https://drod02g-vh.akamaihd.net/i/dk/clear/streaming/0f/5fdd8132aa5a612714959b0f/Ternet-Ninja_c8983a9436714fc2b3731072c55dd2e9_,300,512,1000,2200,3000,4300,.mp4.csmil/master.m3u8?cc1=name=Dansk~default=no~forced=no~lang=da~uri=https://drod02g-vh.akamaihd.net/p/allx/clear/download/0f/5fdd8132aa5a612714959b0f/subtitles/HardOfHearing-17889996-0deafd96-52ce-4c8f-8e8d-0da44fc8ace6/playlist.m3u8'
+data = fetch_play_list(url)
 master_play_list = save_master_play_list(data, output_path)
 
 
