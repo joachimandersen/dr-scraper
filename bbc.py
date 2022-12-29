@@ -196,7 +196,7 @@ for subtitle_url in subtitle_urls:
     fetch_and_save_subtitles(subtitle_url, output_path, subtitles_index)
     subtitles_index += 1
 
-exit()
+#exit()
 
 url = media_urls[index]
 
