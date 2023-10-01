@@ -8,6 +8,24 @@ import os
 import datetime
 import threading
 import json
+import unicodedata
+import re
+
+def slugify(value, allow_unicode=False):
+    """
+    Taken from https://github.com/django/django/blob/master/django/utils/text.py
+    Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
+    dashes to single dashes. Remove characters that aren't alphanumerics,
+    underscores, or hyphens. Convert to lowercase. Also strip leading and
+    trailing whitespace, dashes, and underscores.
+    """
+    value = str(value)
+    if allow_unicode:
+        value = unicodedata.normalize('NFKC', value)
+    else:
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
+    value = re.sub(r'[^\w\s-]', '', value.lower())
+    return re.sub(r'[-\s]+', '-', value).strip('-_')
 
 def fetch_play_lists(path, i, fetch_segments):
     file = open(path, 'r')
@@ -96,7 +114,8 @@ def download_ts_segment(url, dir_name, base_url):
     start = datetime.datetime.now()
     while status != '200':
         retries = urllib3.util.Retry(connect=5, read=4, redirect=5)
-        http = urllib3.PoolManager(retries=retries)
+        timeout = urllib3.Timeout(connect=10.0, read=10.0)
+        http = urllib3.PoolManager(retries=retries, timeout=timeout)
         print(base_url + '/' + url)
         request = http.request('GET', base_url + '/' + url)
         status = str(request.status)
@@ -167,7 +186,13 @@ episode_selector_url = "https://ibl.api.bbc.co.uk/ibl/v1/episodes/{}".format(id)
 
 episode_json = download_json(episode_selector_url)
 
+#print(episode_json)
+
+
 pid = episode_json['episodes'][0]['versions'][0]['id']
+title = slugify(episode_json['episodes'][0]['title'])
+print(title)
+#exit()
 
 media_selector_url = "https://open.live.bbc.co.uk/mediaselector/6/select/version/2.0/mediaset/pc/vpid/{}/format/json/jsfunc/JS_callbacks0".format(pid)
 print(media_selector_url)
